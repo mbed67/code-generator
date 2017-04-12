@@ -1,0 +1,3 @@
+mbed67_generator_homepage:
+    path:     /
+    defaults: { _controller: Mbed67GeneratorBundle:Default:index }

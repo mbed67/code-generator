@@ -1,0 +1,4 @@
+services:
+#    mbed67_generator.example:
+#        class: Mbed67\GeneratorBundle\Example
+#        arguments: ["@service_id", "plain_value", "%parameter%"]
