@@ -22,12 +22,13 @@ final class {{ event_name }}
 {% endfor %}
     public function __construct(
         string $aggregateId,
-    {% for property, type in properties[0:properties|length -1] %}
+    {%  for property, type in properties[0:properties|length -1] %}
     {{ type == 'uuid'? 'string': type }} ${{ property }},
-    {% endfor %}
-    {% for property, type in properties[properties|length -1:] %}
-    {{- type == 'uuid'? 'string': type }} ${{ property }}
-    {% endfor %}
+    {%  endfor %}
+
+    {%-  for property, type in properties[properties|length -1:] %}
+    {{ type == 'uuid'? 'string': type }} ${{ property }}
+    {%  endfor %}
 ) {
         Assertion::uuid($aggregateId, 'Aggregate ID must be a valid UUID');
         {% for property, type in properties %}
