@@ -1,0 +1,75 @@
+<?php
+
+declare (strict_types = 1);
+
+namespace {{ namespace }}\{{ aggregate }};
+
+use Assert\Assertion;
+
+final class {{ event_name }}
+{
+    /**
+     * @var string
+     */
+    private $aggregateId;
+
+{% for property, type in properties %}
+    /**
+     * @var {{ type == 'uuid'? 'string': type }}
+     */
+    private ${{ property }};
+
+{% endfor %}
+    public function __construct(
+        string $aggregateId,
+    {% for property, type in properties[0:properties|length -1] %}
+    {{ type == 'uuid'? 'string': type }} ${{ property }},
+    {% endfor %}
+    {% for property, type in properties[properties|length -1:] %}
+    {{- type == 'uuid'? 'string': type }} ${{ property }}
+    {% endfor %}
+) {
+        Assertion::uuid($aggregateId, 'Aggregate ID must be a valid UUID');
+        {% for property, type in properties %}
+            {%- if type == 'uuid' %}
+                {%- include '/validations/Uuid.php.twig' %}
+            {%- endif %}
+        {% endfor %}
+
+        $this->aggregateId = $aggregateId;
+    {% for property, type in properties %}
+    $this->{{ property }} = ${{ property }};
+    {% endfor %}
+    }
+
+    public function aggregateId(): string
+    {
+        return $this->aggregateId;
+    }
+    {% for property, type in properties %}
+        {%- include '/methods/Getter.php.twig' %}
+    {%- endfor %}
+
+    public function toArray(): array
+    {
+        return [
+            'aggregateId' => $this->aggregateId,
+    {% for property, type in properties %}
+        '{{ property }}' => $this->{{ property }},
+    {% endfor %}
+    ];
+    }
+
+    public static function fromArray(array $payload): self
+    {
+        return new self(
+            $payload['aggregateId'],
+    {% for property, type in properties[0:properties|length -1] %}
+        $payload['{{ property }}'],
+    {% endfor %}
+    {%- for property, type in properties[properties|length -1:] %}
+        $payload['{{ property }}']
+    {% endfor %}
+    );
+    }
+}
