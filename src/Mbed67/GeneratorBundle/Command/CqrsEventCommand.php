@@ -2,6 +2,7 @@
 
 namespace Mbed67\GeneratorBundle\Command;
 
+use Mbed67\GeneratorBundle\Builder\EventBuilder;
 use Symfony\Component\Console\Helper\QuestionHelper;
 use Symfony\Bundle\FrameworkBundle\Command\ContainerAwareCommand;
 use Symfony\Component\Console\Input\InputArgument;
@@ -11,6 +12,7 @@ use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Console\Question\ChoiceQuestion;
 use Symfony\Component\Console\Question\ConfirmationQuestion;
 use Symfony\Component\Console\Question\Question;
+use TwigGenerator\Builder\Generator;
 
 class CqrsEventCommand extends ContainerAwareCommand
 {
@@ -34,21 +36,23 @@ class CqrsEventCommand extends ContainerAwareCommand
         // name of the event
         $question = new Question('Please enter the name of the event: ');
 
-        if (!$helper->ask($input, $output, $question)) {
+        $event_name = $helper->ask($input, $output, $question);
+
+        if (!$event_name) {
             return;
         }
 
-        $event_name = $helper->ask($input, $output, $question);
         $input->setArgument('event_name', $event_name);
 
         // name of the aggregate
         $question = new Question('Please enter the name of the aggregate: ');
 
-        if (!$helper->ask($input, $output, $question)) {
+        $aggregate = $helper->ask($input, $output, $question);
+
+        if (!$aggregate) {
             return;
         }
 
-        $aggregate = $helper->ask($input, $output, $question);
         $input->setArgument('aggregate', $aggregate);
 
 
@@ -80,11 +84,44 @@ class CqrsEventCommand extends ContainerAwareCommand
 
     protected function execute(InputInterface $input, OutputInterface $output)
     {
+        $event_name = $input->getArgument('event_name');
+        $aggregate = $input->getArgument('aggregate');
         $properties = $input->getOption('properties');
 
-        var_dump($properties);
+        // initialize a builder
+        $builder = new EventBuilder();
+        $builder->setOutputName($event_name . '.php');
 
-        $output->writeln('Command result.');
+        // add specific configuration for my builder
+        $builder->setVariable('className', 'EventBuilder');
+        $builder->setVariable('aggregate', $aggregate);
+        $builder->setVariable('event_name', $event_name);
+        $builder->setVariable('properties', $properties);
+
+        // set template name
+        $builder->setTemplateName('Event.php.twig');
+
+        // create a generator
+        $generator = new Generator();
+        $generator->setTemplateDirs(array(
+            __DIR__ . '/../Resources/skeleton/event',
+        ));
+
+        // allways regenerate classes even if they exist -> no cache
+        $generator->setMustOverwriteIfExists(true);
+
+        // set common variables
+        $generator->setVariables(array(
+            'namespace' => 'Mbed67\GeneratorBundle\Generated',
+        ));
+
+        // add the builder to the generator
+        $generator->addBuilder($builder);
+
+        // Run generation for all builders
+        $generator->writeOnDisk(__DIR__ . '/../Generated');
+
+        $output->writeln('Event ' . $event_name . ' has been written to disk.');
     }
 
     private function getPropertyName(InputInterface $input, OutputInterface $output, QuestionHelper $helper): string
