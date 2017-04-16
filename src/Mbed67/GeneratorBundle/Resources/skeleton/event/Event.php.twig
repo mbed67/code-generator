@@ -13,41 +13,73 @@ final class {{ event_name }}
      */
     private $aggregateId;
 
-{% for property, type in properties %}
+{% for property, options in properties %}
     /**
-     * @var {{ type == 'uuid'? 'string': type }}
+     * @var {{ options.type }}
      */
     private ${{ property }};
 
 {% endfor %}
     public function __construct(
         string $aggregateId,
-    {%  for property, type in properties[0:properties|length -1] %}
-    {{ type == 'uuid'? 'string': type }} ${{ property }},
+    {%  for property, options in properties[0:properties|length -1] %}
+    {{ options.type }} ${{ property }},
     {%  endfor %}
 
-    {%-  for property, type in properties[properties|length -1:] %}
-    {{ type == 'uuid'? 'string': type }} ${{ property }}
+    {%-  for property, options in properties[properties|length -1:] %}
+    {{ options.type }} ${{ property }}
     {%  endfor %}
 ) {
-        Assertion::uuid($aggregateId, 'Aggregate ID must be a valid UUID');
-        {% for property, type in properties %}
-            {%- if type == 'uuid' %}
-                {%- include '/validations/Uuid.php.twig' %}
-            {%- endif %}
+        Assertion::uuid($aggregateId, 'Aggregate ID must be a valid UUID.');
+        {%- for property, options in properties if options.validator %}
+
+            {%- for validator in options.validator -%}
+
+                {%- if validator == 'uuid' -%}
+
+                    {%- include '/validations/Uuid.php.twig' %}
+
+                {%- endif %}
+
+                {%- if validator == 'email' -%}
+
+                    {%- include '/validations/Email.php.twig' %}
+
+                {%- endif %}
+
+                {%- if validator == 'notBlank' -%}
+
+                    {%- include '/validations/NotBlank.php.twig' %}
+
+                {%- endif %}
+
+                {%- if validator == 'nullOrString' -%}
+
+                    {% include '/validations/NullOrString.php.twig' %}
+
+                {%- endif %}
+
+                {%- if validator == 'nullOrNotBlank' -%}
+
+                    {%- include '/validations/NullOrNotBlank.php.twig' %}
+
+                {%- endif %}
+
+           {%- endfor -%}
+
         {% endfor %}
 
         $this->aggregateId = $aggregateId;
-    {% for property, type in properties %}
+    {% for property, options in properties %}
     $this->{{ property }} = ${{ property }};
     {% endfor %}
-    }
+}
 
     public function aggregateId(): string
     {
         return $this->aggregateId;
     }
-    {% for property, type in properties %}
+    {% for property, options in properties %}
         {%- include '/methods/Getter.php.twig' %}
     {%- endfor %}
 
@@ -55,7 +87,7 @@ final class {{ event_name }}
     {
         return [
             'aggregateId' => $this->aggregateId,
-    {% for property, type in properties %}
+    {% for property, options in properties %}
         '{{ property }}' => $this->{{ property }},
     {% endfor %}
     ];
@@ -65,10 +97,10 @@ final class {{ event_name }}
     {
         return new self(
             $payload['aggregateId'],
-    {% for property, type in properties[0:properties|length -1] %}
+    {% for property, options in properties[0:properties|length -1] %}
         $payload['{{ property }}'],
     {% endfor %}
-    {%- for property, type in properties[properties|length -1:] %}
+    {%- for property, options in properties[properties|length -1:] %}
         $payload['{{ property }}']
     {% endfor %}
     );

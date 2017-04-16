@@ -1,5 +1,5 @@
 
-    public function {{ property }}(): {{ type == 'uuid'? 'string': type }}
+    public function {{ property }}(): {{ options.type }}
     {
         return $this->{{ property }};
     }
