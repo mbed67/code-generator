@@ -31,9 +31,9 @@ final class {{ event_name }}
     {%  endfor %}
 ) {
         Assertion::uuid($aggregateId, 'Aggregate ID must be a valid UUID.');
-        {%- for property, options in properties if options.validator %}
+        {%- for property, options in properties if options.validators %}
 
-            {%- for validator in options.validator -%}
+            {%- for validator in options.validators -%}
 
                 {%- if validator == 'uuid' -%}
 

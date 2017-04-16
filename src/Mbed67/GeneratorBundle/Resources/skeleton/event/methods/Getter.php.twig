@@ -1,5 +1,12 @@
 
+{% if ('nullOrNotBlank' in options.validators) or ('nullOrString' in options.validators) %}
+    public function {{ property }}(): ?{{ options.type }}
+    {
+        return $this->{{ property }};
+    }
+{% else %}
     public function {{ property }}(): {{ options.type }}
     {
         return $this->{{ property }};
     }
+{% endif %}

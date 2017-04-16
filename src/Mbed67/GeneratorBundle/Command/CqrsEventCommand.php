@@ -69,7 +69,7 @@ class CqrsEventCommand extends ContainerAwareCommand
 
             $validators = $this->getPropertyValidators($input, $output, $helper) ?: '';
 
-            $properties[$property] = ['type' => $type, 'validator' => $validators];
+            $properties[$property] = ['type' => $type, 'validators' => $validators];
 
             $finished = $this->isFinished($input, $output, $helper);
         }

@@ -68,7 +68,7 @@ final class ParticipantAddedToProject
         return $this->firstName;
     }
 
-    public function infix(): string
+    public function infix(): ?string
     {
         return $this->infix;
     }
