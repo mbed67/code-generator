@@ -56,15 +56,23 @@ final class {{ event_name }}Test  extends \PHPUnit_Framework_TestCase
 
         );
 
-
         $this->assertInstanceOf({{ event_name }}::class, $event);
-        {% for property, options in properties %}
+        {%- for fieldType in fake('fieldTypes', 1, aggregate) %}
+
+        $this->assertSame('{{ fieldType.uuid }}', $event->aggregateId());
+        {%- endfor %}
+        {% for property, options in properties if options.type != 'int'%}
         {%- for fieldType in fake('fieldTypes', 1, property) %}
 
         $this->assertSame('{{ fieldType[options.faker] }}', $event->{{ property }}());
         {%- endfor %}
         {%- endfor %}
+        {% for property, options in properties if options.type == 'int'%}
+        {%- for fieldType in fake('fieldTypes', 1, property) %}
+
+        $this->assertSame({{ fieldType[options.faker] }}, $event->{{ property }}());
+        {%- endfor %}
+        {%- endfor %}
 
     }
-
 }
