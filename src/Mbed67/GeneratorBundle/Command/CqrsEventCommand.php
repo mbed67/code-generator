@@ -22,9 +22,22 @@ class CqrsEventCommand extends ContainerAwareCommand
             ->setName('cqrs:event')
             ->setDescription('Creates a cqrs event')
             ->setDefinition(array(
-                new InputArgument('event_name', InputArgument::REQUIRED, 'The name of the event to create'),
-                new InputArgument('aggregate', InputArgument::REQUIRED, 'The name of the aggregate'),
-                new InputOption('properties','' , InputOption::VALUE_REQUIRED | InputOption::VALUE_IS_ARRAY, 'The properties of the event'),
+                new InputArgument(
+                    'event_name',
+                    InputArgument::REQUIRED,
+                    'The name of the event to create'
+                ),
+                new InputArgument(
+                    'aggregate',
+                    InputArgument::REQUIRED,
+                    'The name of the aggregate'
+                ),
+                new InputOption(
+                    'properties',
+                    '' ,
+                    InputOption::VALUE_REQUIRED | InputOption::VALUE_IS_ARRAY,
+                    'The properties of the event'
+                ),
             ))
         ;
     }
