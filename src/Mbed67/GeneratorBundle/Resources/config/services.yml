@@ -1,4 +1,9 @@
 services:
-#    mbed67_generator.example:
-#        class: Mbed67\GeneratorBundle\Example
-#        arguments: ["@service_id", "plain_value", "%parameter%"]
+    ablett.twig_extension.twig_faker_extension:
+        class: Ablett\TwigFaker\TwigFakerExtension
+        tags:
+            - { name: 'twig.extension' }
+    custom.twig.extension.debug:
+        class: Twig_Extension_Debug
+        tags:
+            - { name: 'twig.extension' }

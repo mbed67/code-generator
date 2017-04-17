@@ -72,8 +72,9 @@ class CqrsEventCommand extends ContainerAwareCommand
             }
 
             $validators = $this->getPropertyValidators($input, $output, $helper) ?: '';
+            $faker = $this->getPropertyFaker($input, $output, $helper) ?: '';
 
-            $properties[$property] = ['type' => $type, 'validators' => $validators];
+            $properties[$property] = ['type' => $type, 'validators' => $validators, 'faker' => $faker];
 
             $finished = $this->isFinished($input, $output, $helper);
         }
@@ -101,6 +102,19 @@ class CqrsEventCommand extends ContainerAwareCommand
         // set template name
         $builder->setTemplateName('Event.php.twig');
 
+        // initialize a test builder
+        $testBuilder = new EventBuilder();
+        $testBuilder->setOutputName($event_name . 'Test.php');
+
+        // add specific configuration for my builder
+        $testBuilder->setVariable('className', 'EventBuilder');
+        $testBuilder->setVariable('aggregate', $aggregate);
+        $testBuilder->setVariable('event_name', $event_name);
+        $testBuilder->setVariable('properties', $properties);
+
+        // set template name
+        $testBuilder->setTemplateName('EventTest.php.twig');
+
         // create a generator
         $generator = new Generator();
         $generator->setTemplateDirs(array(
@@ -117,9 +131,10 @@ class CqrsEventCommand extends ContainerAwareCommand
 
         // add the builder to the generator
         $generator->addBuilder($builder);
+        $generator->addBuilder($testBuilder);
 
         // Run generation for all builders
-        $generator->writeOnDisk(__DIR__ . '/../Generated');
+        $generator->writeOnDisk(__DIR__ . '/../Generated/' . $aggregate);
 
         $output->writeln('Event ' . $event_name . ' has been written to disk.');
     }
@@ -140,7 +155,7 @@ class CqrsEventCommand extends ContainerAwareCommand
         $question->setErrorMessage('Type %s is invalid.');
 
         $type = $helper->ask($input, $output, $question);
-        $output->writeln('You have just selected: '.$type);
+        $output->writeln('You have just selected: ' . $type);
 
         return $type;
     }
@@ -163,6 +178,25 @@ class CqrsEventCommand extends ContainerAwareCommand
         $output->writeln('You have just selected: ' . implode(', ', $validators));
 
         return $validators;
+    }
+
+    private function getPropertyFaker(
+        InputInterface $input,
+        OutputInterface $output,
+        QuestionHelper $helper
+    ): string {
+        $question = new ChoiceQuestion(
+            'Please select faker for the property: ',
+            ['uuid', 'email', 'string', 'int', 'firstName', 'infix', 'surname', 'atomDate'],
+            '0'
+        );
+
+        $question->setErrorMessage('Faker %s is invalid.');
+
+        $faker = $helper->ask($input, $output, $question);
+        $output->writeln('You have just selected: ' . $faker);
+
+        return $faker;
     }
 
     private function isFinished(InputInterface $input, OutputInterface $output, QuestionHelper $helper): bool

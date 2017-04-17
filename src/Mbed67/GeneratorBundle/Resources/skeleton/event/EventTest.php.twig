@@ -1,0 +1,70 @@
+<?php
+
+declare (strict_types = 1);
+
+namespace {{ namespace }}\{{ aggregate }};
+
+use Assert\Assertion;
+
+/**
+ * @coversDefaultClass {{ namespace }}\{{ aggregate }}\{{ event_name }}
+ */
+final class {{ event_name }}Test  extends \PHPUnit_Framework_TestCase
+{
+    /**
+     * @test
+     * @covers ::aggregateId
+{% for property, options in properties %}
+     * @covers ::{{ property }}
+{% endfor %}
+     */
+    public function it_creates_an_instance()
+    {
+        $event = new {{ event_name }} (
+        {%- for fieldType in fake('fieldTypes', 1, 'aggregate') %}
+
+            '{{ fieldType.uuid }}',
+        {%- endfor %}
+
+        {%- for property, options in properties[0:properties|length -1] if options.type != 'int' %}
+        {%- for fieldType in fake('fieldTypes', 1, property) %}
+
+            '{{ fieldType[options.faker] }}',
+        {%- endfor %}
+        {%- endfor %}
+
+        {%- for property, options in properties[0:properties|length -1] if options.type == 'int' %}
+        {%- for fieldType in fake('fieldTypes', 1, property) %}
+
+            {{ fieldType[options.faker] }},
+        {%- endfor %}
+        {%- endfor %}
+
+        {%- for property, options in properties[properties|length -1:] if options.type != 'int' %}
+        {%- for fieldType in fake('fieldTypes', 1, property) %}
+
+            '{{ fieldType[options.faker] }}'
+        {%- endfor %}
+        {%- endfor %}
+
+        {%- for property, options in properties[properties|length -1:] if options.type == 'int' %}
+        {%- for fieldType in fake('fieldTypes', 1, property) %}
+
+            {{ fieldType[options.faker] }}
+        {%- endfor %}
+        {%- endfor %}
+
+        );
+
+
+        $this->assertInstanceOf({{ event_name }}::class, $event);
+        {% for property, options in properties %}
+        {%- for fieldType in fake('fieldTypes', 1, property) %}
+
+        $this->assertSame('{{ fieldType[options.faker] }}', $event->{{ property }}());
+        {%- endfor %}
+        {%- endfor %}
+
+    }
+
+}
