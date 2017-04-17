@@ -35,7 +35,10 @@
         "twig/twig": "^1.0||^2.0"
     },
     "require-dev": {
+        "alanablett/twig-faker": "^1.1",
         "cedriclombardot/twig-generator": "^1.1",
+        "fzaninotto/faker": "^1.6",
+        "phpunit/phpunit": "^5.2",
         "sensio/generator-bundle": "^3.0",
         "symfony/phpunit-bridge": "^3.0"
     },
